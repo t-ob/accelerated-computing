@@ -1,0 +1,19 @@
+<nav class="prose dark:prose-invert">
+    <div>
+      <a href='/'>{{ .Site.Title }}</a>
+    </div>
+    <ol class="list-inside [counter-reset:section]">
+        {{ range .Site.Sections }}
+        <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.']">
+            <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+            <ol class="list-inside [counter-reset:section]">
+                {{ range .Pages }}
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                </li>
+                {{ end }}
+            </ol>
+        </li>
+        {{ end }}
+    </ol>
+  </nav>

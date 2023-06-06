@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en"><title>Introduction to accelerated computing</title>
+
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" type="text/css" href="/css/syntax.css">
+<body class="bg-white dark:bg-slate-800">
+            <div class="container mx-auto"><div id="content">
+<div class="flex flex-row">
+    
+    <div class="basis-1/4 p-4">
+      <nav class="prose dark:prose-invert">
+    <div>
+      <a href='/'>Introduction to accelerated computing</a>
+    </div>
+    <ol class="list-inside [counter-reset:section]">
+        
+        <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.']">
+            <a href="/introduction/">Introduction</a>
+            <ol class="list-inside [counter-reset:section]">
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/cuda-concepts/">CUDA concepts</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/example-scalar-product/">Example: scalar product</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/putting-it-all-together/">Putting it all together</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/performance/">Performance</a>
+                </li>
+                
+            </ol>
+        </li>
+        
+        <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.']">
+            <a href="/appendix-code-listings/">Appendix: code listings</a>
+            <ol class="list-inside [counter-reset:section]">
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/cuda-scalar-product-naive/">CUDA scalar product</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/cuda-scalar-product-cublas/">CUDA scalar product (cuBLAS)</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/host-scalar-product-naive/">Host scalar product (naive)</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/host-scalar-product-avx/">Host scalar product (AVX)</a>
+                </li>
+                
+            </ol>
+        </li>
+        
+    </ol>
+  </nav>
+    </div>
+    
+    <div class="basis-3/4 p-4">
+      <article class="prose dark:prose-invert prose-xl">
+        <h2 id="putting-it-all-together">Putting it all together</h2>
+<p>At this point, we&rsquo;ve written the kernels which will do our heavy lifting. We still need to call these from the host. Let&rsquo;s put this all together in a complete program. It does the following:</p>
+<ol>
+<li>Declares a block size of 256.</li>
+<li>Creates two constant vectors of length 1048576 and copies them to the GPU.</li>
+<li>Allocates additional memory on the GPU to store the output of their pairwise component products.</li>
+<li>Launches the first kernel <code>pairwiseProducts</code> to compute and store these products.</li>
+<li>Repeatedly calls the second kernel <code>parallelSum</code>, at each stage halving the number of blocks to consider. Each loop also allocates memory on the device to store intermediate results.</li>
+<li>Copies the result from the device back to the host and prints it out.</li>
+<li>Cleans up any allocated memory on both host and device.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;cuda.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1">// CUDA kernels defined above
+</span></span></span><span class="line"><span class="cl"><span class="c1">// ...
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">int</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">20</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">size_t</span> <span class="n">size</span> <span class="o">=</span> <span class="n">N</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">int</span> <span class="n">BLOCK_SIZE</span> <span class="o">=</span> <span class="mi">256</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="o">*</span><span class="n">h_x</span><span class="p">,</span> <span class="o">*</span><span class="n">h_y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">h_x</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">h_y</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">h_x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">h_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="o">*</span><span class="n">d_x</span><span class="p">,</span> <span class="o">*</span><span class="n">d_y</span><span class="p">,</span> <span class="o">*</span><span class="n">d_z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_x</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_y</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_z</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">d_x</span><span class="p">,</span> <span class="n">h_x</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">d_y</span><span class="p">,</span> <span class="n">h_y</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Compute the product of the two vectors.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">pairwiseProducts</span><span class="o">&lt;&lt;&lt;</span><span class="n">N</span><span class="o">/</span><span class="n">BLOCK_SIZE</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">d_x</span><span class="p">,</span> <span class="n">d_y</span><span class="p">,</span> <span class="n">d_z</span><span class="p">,</span> <span class="n">N</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Compute the sum of the products with parallel reduction.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">int</span> <span class="n">numElements</span> <span class="o">=</span> <span class="n">N</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span><span class="o">*</span> <span class="n">d_in</span> <span class="o">=</span> <span class="n">d_z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span><span class="o">*</span> <span class="n">d_out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">while</span><span class="p">(</span><span class="n">numElements</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">numBlocks</span> <span class="o">=</span> <span class="p">(</span><span class="n">numElements</span> <span class="o">+</span> <span class="n">BLOCK_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">BLOCK_SIZE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_out</span><span class="p">,</span> <span class="n">numBlocks</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">parallelSum</span><span class="o">&lt;&lt;&lt;</span><span class="n">numBlocks</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">d_in</span><span class="p">,</span> <span class="n">d_out</span><span class="p">,</span> <span class="n">numElements</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">d_in</span> <span class="o">!=</span> <span class="n">d_z</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Don&#39;t free the original input array.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_in</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">d_in</span> <span class="o">=</span> <span class="n">d_out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">numElements</span> <span class="o">=</span> <span class="n">numBlocks</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">h_out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMemcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">h_out</span><span class="p">,</span> <span class="n">d_out</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">),</span> <span class="n">cudaMemcpyDeviceToHost</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;The dot product is: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">h_out</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_y</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_z</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_out</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">free</span><span class="p">(</span><span class="n">h_x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">free</span><span class="p">(</span><span class="n">h_y</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>I won&rsquo;t cover everything line by line, but let&rsquo;s look a bit at memory management and kernel execution.</p>
+<h3 id="memory-management">Memory management</h3>
+<p>The CUDA SDK provides an API for memory management between host and device. A full survey is beyond the scope of this article, but we use some of its basic functionality here. For example, the following code allocates space for three floating point arrays on the device with <code>cudaMalloc</code>, and copies the input from the host with <code>cudaMemcpy</code> with kind <code>cudaMemcpyHostToDevice</code> (copying from device to host is later accomplished with <code>cudaMemcpyDeviceToHost</code>).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">float</span> <span class="o">*</span><span class="n">d_x</span><span class="p">,</span> <span class="o">*</span><span class="n">d_y</span><span class="p">,</span> <span class="o">*</span><span class="n">d_z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_x</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_y</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_z</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">d_x</span><span class="p">,</span> <span class="n">h_x</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">d_y</span><span class="p">,</span> <span class="n">h_y</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span></span></code></pre></div><p>Similarly, like <code>free</code>, memory on device can be released once it&rsquo;s no longer needed:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">cudaFree</span><span class="p">(</span><span class="n">d_x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">cudaFree</span><span class="p">(</span><span class="n">d_y</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">cudaFree</span><span class="p">(</span><span class="n">d_z</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">cudaFree</span><span class="p">(</span><span class="n">d_out</span><span class="p">);</span>
+</span></span></code></pre></div><h3 id="kernel-execution">Kernel execution</h3>
+<p>We execute our kernels in two places in the above program. First, to compute the pairwise products, with the following invocation:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">pairwiseProducts</span><span class="o">&lt;&lt;&lt;</span><span class="n">N</span><span class="o">/</span><span class="n">BLOCK_SIZE</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">d_x</span><span class="p">,</span> <span class="n">d_y</span><span class="p">,</span> <span class="n">d_z</span><span class="p">,</span> <span class="n">N</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+</span></span></code></pre></div><p>The expression <code>&lt;&lt;&lt;N/BLOCK_SIZE, BLOCK_SIZE&gt;&gt;&gt;</code> is the execution configuration for the kernel. Here, we are declaring a grid of 4096 blocks, each having 256 threads. The CUDA runtime itself is responsible for orchestrating how and when these execute. Launching a kernel is asynchronous by default and returns immediately, but we want to wait for this computation to finish, so we call <code>cudaDeviceSynchronize()</code> to wait.</p>
+<p>Next, we have the summation itself:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Compute the sum of the products with parallel reduction.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">int</span> <span class="n">numElements</span> <span class="o">=</span> <span class="n">N</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span><span class="o">*</span> <span class="n">d_in</span> <span class="o">=</span> <span class="n">d_z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span><span class="o">*</span> <span class="n">d_out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">while</span><span class="p">(</span><span class="n">numElements</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">numBlocks</span> <span class="o">=</span> <span class="p">(</span><span class="n">numElements</span> <span class="o">+</span> <span class="n">BLOCK_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">BLOCK_SIZE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_out</span><span class="p">,</span> <span class="n">numBlocks</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">parallelSum</span><span class="o">&lt;&lt;&lt;</span><span class="n">numBlocks</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">d_in</span><span class="p">,</span> <span class="n">d_out</span><span class="p">,</span> <span class="n">numElements</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">d_in</span> <span class="o">!=</span> <span class="n">d_z</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Don&#39;t free the original input array.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_in</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">d_in</span> <span class="o">=</span> <span class="n">d_out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">numElements</span> <span class="o">=</span> <span class="n">numBlocks</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Each iteration of this loop launches the <code>parallelSum</code> kernel with the configuration <code>&lt;&lt;&lt;numBlocks, BLOCK_SIZE, BLOCK_SIZE*sizeof(float)&gt;&gt;&gt;</code>. The first two parameters are what we saw above &ndash; the grid size and block size (respectively). The third parameter tells the CUDA runtime to allocate <code>BLOCK_SIZE*sizeof(float)</code> bytes of shared memory in each block. After the first iteration, <code>d_out</code> contains 4096 scalar sub-products. After the second iteration, it contains 16, and finally in the third iteration the final sum is computed, ready to be copied back to the host.</p>
+
+
+        <p>
+
+
+
+
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+     
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+
+
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+     
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+
+
+    <a href="/introduction/example-scalar-product/">Previous</a>
+
+ | 
+
+    <a href="/introduction/performance/">Next</a>
+
+</p>
+      </article>
+    </div>
+  </div>
+
+                </div></div>
+    </body>
+</html>

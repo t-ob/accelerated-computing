@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en"><title>Introduction to accelerated computing</title>
+
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" type="text/css" href="/css/syntax.css">
+<body class="bg-white dark:bg-slate-800">
+            <div class="container mx-auto"><div id="content">
+<div class="flex flex-row">
+    
+    <div class="basis-1/4 p-4">
+      <nav class="prose dark:prose-invert">
+    <div>
+      <a href='/'>Introduction to accelerated computing</a>
+    </div>
+    <ol class="list-inside [counter-reset:section]">
+        
+        <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.']">
+            <a href="/introduction/">Introduction</a>
+            <ol class="list-inside [counter-reset:section]">
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/cuda-concepts/">CUDA concepts</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/example-scalar-product/">Example: scalar product</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/putting-it-all-together/">Putting it all together</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/performance/">Performance</a>
+                </li>
+                
+            </ol>
+        </li>
+        
+        <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.']">
+            <a href="/appendix-code-listings/">Appendix: code listings</a>
+            <ol class="list-inside [counter-reset:section]">
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/cuda-scalar-product-naive/">CUDA scalar product</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/cuda-scalar-product-cublas/">CUDA scalar product (cuBLAS)</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/host-scalar-product-naive/">Host scalar product (naive)</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/host-scalar-product-avx/">Host scalar product (AVX)</a>
+                </li>
+                
+            </ol>
+        </li>
+        
+    </ol>
+  </nav>
+    </div>
+    
+    <div class="basis-3/4 p-4">
+      <article class="prose dark:prose-invert prose-xl">
+        <h2 id="introduction">Introduction</h2>
+<p>Accelerated computing is a broad term. It describes the specialised hardware, software, and programming paradigms which can be employed to perform certain classes of computation more efficiently than is possible on a general-purpose CPU alone.</p>
+<p>This specialised hardware typically includes Graphics Processing Units (GPUs), Field Programmable Gate Arrays (FPGAs), Application-Specific Integrated Circuits (ASICs), and other forms of hardware accelerators. These accelerators are designed to handle specific types of computations more efficiently, particularly for workloads that involve parallel processing, like machine learning, high performance computing (HPC), and graphics rendering.</p>
+<p>GPUs, for example, are excellent at performing floating-point operations quickly and in parallel, which makes them highly effective for tasks such as rendering graphics and performing machine learning algorithms. FPGAs can be reprogrammed to perform specific operations with high efficiency, while ASICs are custom-designed for a specific application or task.</p>
+<p>The software for accelerated computing includes specialized libraries and APIs that allow programmers to take advantage of the features of the hardware accelerators. This includes software frameworks like CUDA for NVIDIA GPUs, OpenCL for various types of accelerators, and others.</p>
+<p>This text currently limits its focus to NVidia GPUs and associated software, though this may change in the future.</p>
+<p>We start this chapter with a brief introduction to the CUDA programming framework. We then use these key concepts to build a simple (but non-trivial) CUDA C++ program which performs its computation on a GPU. Finally, we will benchmark this program against comparable CPU-bound applications, as well as against an optimised reference implementation.</p>
+
+
+        <p>
+
+
+
+
+
+    
+    
+
+    
+     
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+
+
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+     
+    
+    
+
+    
+    
+
+
+
+    <a href="/">Previous</a>
+
+ | 
+
+    <a href="/introduction/cuda-concepts/">Next</a>
+
+</p>
+      </article>
+    </div>
+  </div>
+
+                </div></div>
+    </body>
+</html>

@@ -1,0 +1,5 @@
+<title>{{ .Site.Title }}</title>
+{{ $css := resources.Get "css/style.css" | resources.PostCSS }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}">
+<link rel="stylesheet" type="text/css" href="/css/syntax.css">
+{{ partial "math.html" . }}

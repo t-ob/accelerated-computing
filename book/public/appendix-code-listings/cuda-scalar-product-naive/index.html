@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en"><title>Introduction to accelerated computing</title>
+
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" type="text/css" href="/css/syntax.css">
+<body class="bg-white dark:bg-slate-800">
+            <div class="container mx-auto"><div id="content">
+<div class="flex flex-row">
+    
+    <div class="basis-1/4 p-4">
+      <nav class="prose dark:prose-invert">
+    <div>
+      <a href='/'>Introduction to accelerated computing</a>
+    </div>
+    <ol class="list-inside [counter-reset:section]">
+        
+        <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.']">
+            <a href="/introduction/">Introduction</a>
+            <ol class="list-inside [counter-reset:section]">
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/cuda-concepts/">CUDA concepts</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/example-scalar-product/">Example: scalar product</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/putting-it-all-together/">Putting it all together</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/introduction/performance/">Performance</a>
+                </li>
+                
+            </ol>
+        </li>
+        
+        <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.']">
+            <a href="/appendix-code-listings/">Appendix: code listings</a>
+            <ol class="list-inside [counter-reset:section]">
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/cuda-scalar-product-naive/">CUDA scalar product</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/cuda-scalar-product-cublas/">CUDA scalar product (cuBLAS)</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/host-scalar-product-naive/">Host scalar product (naive)</a>
+                </li>
+                
+                <li class="[counter-increment:section] marker:[content:counters(section,'.')_'.'']">
+                    <a href="/appendix-code-listings/host-scalar-product-avx/">Host scalar product (AVX)</a>
+                </li>
+                
+            </ol>
+        </li>
+        
+    </ol>
+  </nav>
+    </div>
+    
+    <div class="basis-3/4 p-4">
+      <article class="prose dark:prose-invert prose-xl">
+        <h2 id="cuda-scalar-product-naive">CUDA scalar product (naive)</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;cuda.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">__global__</span> <span class="kt">void</span> <span class="nf">pairwiseProducts</span><span class="p">(</span><span class="k">const</span> <span class="kt">float</span><span class="o">*</span> <span class="n">input_x</span><span class="p">,</span> <span class="k">const</span> <span class="kt">float</span><span class="o">*</span> <span class="n">input_y</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">N</span><span class="p">,</span> <span class="kt">float</span> <span class="o">*</span><span class="n">output</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Get the global thread ID
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Check if the thread ID is within the range of N
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">idx</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Compute the product of the corresponding elements from x and y
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">output</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">*</span> <span class="n">input_y</span><span class="p">[</span><span class="n">idx</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// CUDA kernel for parallel reduction
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">__global__</span> <span class="kt">void</span> <span class="nf">parallelSum</span><span class="p">(</span><span class="k">const</span> <span class="kt">float</span><span class="o">*</span> <span class="n">input</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">N</span><span class="p">,</span> <span class="kt">float</span><span class="o">*</span> <span class="n">output</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Define an external shared array accessible by all threads in a block
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">extern</span> <span class="n">__shared__</span> <span class="kt">float</span> <span class="n">sdata</span><span class="p">[];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Get the global and local thread ID
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">tid</span> <span class="o">=</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Load data from global to shared memory
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">sdata</span><span class="p">[</span><span class="n">tid</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">)</span> <span class="o">?</span> <span class="n">input</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">:</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Sync all threads in the block
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">__syncthreads</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Do reduction in shared memory
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">s</span> <span class="o">=</span> <span class="n">blockDim</span><span class="p">.</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span> <span class="n">s</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">;</span> <span class="n">s</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">tid</span> <span class="o">&lt;</span> <span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">sdata</span><span class="p">[</span><span class="n">tid</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sdata</span><span class="p">[</span><span class="n">tid</span> <span class="o">+</span> <span class="n">s</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// Make sure all additions at the current stage are done
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">__syncthreads</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Write result of this block to global memory
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">tid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">output</span><span class="p">[</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">sdata</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">int</span> <span class="n">RUNS</span> <span class="o">=</span> <span class="mi">500</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">int</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">28</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">size_t</span> <span class="n">size</span> <span class="o">=</span> <span class="n">N</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">int</span> <span class="n">BLOCK_SIZE</span> <span class="o">=</span> <span class="mi">256</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="o">*</span><span class="n">h_x</span><span class="p">,</span> <span class="o">*</span><span class="n">h_y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">h_x</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">h_y</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">h_x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">h_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="o">*</span><span class="n">d_x</span><span class="p">,</span> <span class="o">*</span><span class="n">d_y</span><span class="p">,</span> <span class="o">*</span><span class="n">d_z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_x</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_y</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_z</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">d_x</span><span class="p">,</span> <span class="n">h_x</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">d_y</span><span class="p">,</span> <span class="n">h_y</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">cudaMemcpyHostToDevice</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">h_out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span><span class="o">*</span> <span class="n">d_out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">RUNS</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">pairwiseProducts</span><span class="o">&lt;&lt;&lt;</span><span class="n">N</span><span class="o">/</span><span class="n">BLOCK_SIZE</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">d_x</span><span class="p">,</span> <span class="n">d_y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">d_z</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// Compute the product of the two vectors.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">pairwiseProducts</span><span class="o">&lt;&lt;&lt;</span><span class="n">N</span><span class="o">/</span><span class="n">BLOCK_SIZE</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">d_x</span><span class="p">,</span> <span class="n">d_y</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">d_z</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// Compute the sum of the products with parallel reduction.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">int</span> <span class="n">numElements</span> <span class="o">=</span> <span class="n">N</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span><span class="o">*</span> <span class="n">d_in</span> <span class="o">=</span> <span class="n">d_z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">while</span><span class="p">(</span><span class="n">numElements</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">int</span> <span class="n">numBlocks</span> <span class="o">=</span> <span class="p">(</span><span class="n">numElements</span> <span class="o">+</span> <span class="n">BLOCK_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">BLOCK_SIZE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">d_out</span><span class="p">,</span> <span class="n">numBlocks</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">parallelSum</span><span class="o">&lt;&lt;&lt;</span><span class="n">numBlocks</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">d_in</span><span class="p">,</span> <span class="n">numElements</span><span class="p">,</span> <span class="n">d_out</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cudaDeviceSynchronize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">d_in</span> <span class="o">!=</span> <span class="n">d_z</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">// Don&#39;t free the original input array.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_in</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">d_in</span> <span class="o">=</span> <span class="n">d_out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">numElements</span> <span class="o">=</span> <span class="n">numBlocks</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cudaMemcpy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">h_out</span><span class="p">,</span> <span class="n">d_out</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">float</span><span class="p">),</span> <span class="n">cudaMemcpyDeviceToHost</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_y</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_z</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaFree</span><span class="p">(</span><span class="n">d_out</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">free</span><span class="p">(</span><span class="n">h_x</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">free</span><span class="p">(</span><span class="n">h_y</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div>
+
+        <p>
+
+
+
+
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+     
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+
+
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+     
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+    
+    
+
+
+
+    <a href="/appendix-code-listings/">Previous</a>
+
+ | 
+
+    <a href="/appendix-code-listings/cuda-scalar-product-cublas/">Next</a>
+
+</p>
+      </article>
+    </div>
+  </div>
+
+                </div></div>
+    </body>
+</html>
