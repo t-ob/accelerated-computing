@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog on Accelerated Computing</title>
+    <link>https://accelerated-computing.com/blog/</link>
+    <description>Recent content in Blog on Accelerated Computing</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 06 Sep 2023 14:47:30 +0100</lastBuildDate><atom:link href="https://accelerated-computing.com/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hello, world (again)</title>
+      <link>https://accelerated-computing.com/blog/hello-word-again/</link>
+      <pubDate>Wed, 06 Sep 2023 14:47:30 +0100</pubDate>
+      
+      <guid>https://accelerated-computing.com/blog/hello-word-again/</guid>
+      <description>This is the second incarnation of this website. My first attempt took the form (loosely) of an in-progress book about GPU programming, taking inspiration somewhat from algorithmica.org. While I would one day be delighted to write such a book, this format had some drawbacks, not least of which being that I am, in fact, not (yet) a subject matter expert, and (rightly or wrongly) I felt that I had no space to write anything but fully-formed and irrefutably correct things.</description>
+    </item>
+    
+  </channel>
+</rss>

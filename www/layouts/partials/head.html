@@ -1,0 +1,42 @@
+<meta charset="UTF-8">
+{{ with .OutputFormats.Get "rss" -}}
+    {{ printf `<link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .Permalink $.Site.Title | safeHTML }}
+{{ end -}}
+
+{{ if .Site.IsServer }}
+    {{ $seed := "weqklrjfmnk213409ufasdfhnlk3j4bladsfsl" }}
+    {{ $random := delimit (shuffle (split (md5 $seed) "" )) "" }}
+    {{
+    $style := resources.Get "css/styles.css"
+    | resources.PostCSS
+    | resources.ExecuteAsTemplate (printf "tailwind.dev.%s.css" $random) $random
+    }}
+    <link rel="stylesheet" href="{{ $style.RelPermalink }}">
+{{ else }}
+    {{
+    $style := resources.Get "css/styles.css"
+        | resources.PostCSS
+        | resources.Minify
+    }}
+    <link rel="stylesheet" href="{{ $style.RelPermalink }}">
+{{ end }}
+<link rel="stylesheet" type="text/css" href="/css/syntax.css">
+
+{{ if .Params.math }}
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+            delimiters: [
+                {left: "$$", right: "$$", display: true},
+                {left: "$", right: "$", display: false}
+            ]
+        });
+    });
+</script>
+
+{{ end }}
