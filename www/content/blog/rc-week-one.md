@@ -10,7 +10,7 @@ For the unfamiliar, RC is (to quote from their home page) "The retreat where cur
 
 ### How I got here
 
-I left my job at [Stripe][stripe] at the start of the month. I'm proud of what I accomplished there, and how I grew as an engineer, but I came to realise that the kind of work I want to do -- the kind that energises me and gets me out of bed in the morning -- and the way the company is structured are just not compatible. The core, platform, computer-go-brr-shaped work I enjoy is largely concentrated on the US West Coast, while engineering outside the US is for the most part product-shaped (launch in new markets, support local payment methods, etc). I am painting a picture with very broad strokes here, so apologies to any former colleagues who read this and feel like I'm not doing the org structure justice, but I don't want to spend too much time writing about why I left, when what's ahead is far more exciting.
+I left my job at [Stripe][stripe] at the start of the month. I'm proud of what I accomplished there, and how I grew as an engineer, but I came to realise that the kind of work I want to do -- the kind that energises me and gets me out of bed in the morning -- and the way the company is structured are just not compatible. The core platform, computer-go-brr-shaped work I enjoy is largely concentrated on the US West Coast, while engineering outside the US is for the most part product-shaped (launch in new markets, support local payment methods, etc). I am painting a picture with very broad strokes here, so apologies to any former colleagues who read this and feel like I'm not doing the org structure justice, but I don't want to spend too much time writing about why I left, when what's ahead is far more exciting.
 
 Time will tell if walking away from a stable, well-compensated job in this current climate will be foolish or not, but right now I'm in the incredibly privileged position of being able to afford to take a bit of a breather from the daily grind of capitalism, so really, why not? 
 
@@ -49,6 +49,6 @@ TBD! I have some optimism that the hiring market is in a bit of a better place t
 [karpathy]: https://karpathy.ai/zero-to-hero.html
 [xla]: https://github.com/openxla/xla
 [pg]: http://www.paulgraham.com/greatwork.html#:~:text=%22How%20hard%20could%20it%20be%3F%22
-[keleshev]: https://keleshev.com/compiling-to-assembly-from-scratch/resources
+[keleshev]: https://keleshev.com/compiling-to-assembly-from-scratch
 [appel]: https://www.cs.princeton.edu/~appel/modern/ml/
 [cryptopals]: https://cryptopals.com/
