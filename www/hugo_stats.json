@@ -4,9 +4,11 @@
       "a",
       "body",
       "div",
+      "em",
       "h1",
       "h2",
       "h3",
+      "h4",
       "head",
       "html",
       "li",
@@ -29,6 +31,18 @@
       "space-x-4",
       "text-center"
     ],
-    "ids": null
+    "ids": [
+      "aiml",
+      "compilers",
+      "cryptography",
+      "heading",
+      "how",
+      "how-i-got-here",
+      "how-im-going-to-spend-my-time",
+      "plugging-gaps",
+      "the-plan",
+      "what-will-i-do-afterwards",
+      "writing"
+    ]
   }
 }
