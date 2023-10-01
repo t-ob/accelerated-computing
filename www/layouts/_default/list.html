@@ -7,8 +7,8 @@
     </h3>
     <ul class="list-none">
         {{ range .Pages }}
-        <li>
-            ({{ .PublishDate.Format "2 Jan" }}) <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+        <li class="flex space-x-4">
+            <span class="w-16">{{ .PublishDate.Format "2 Jan" }}</span> <a href="{{ .RelPermalink }}">{{ .Title }}</a>
         </li>
         {{ end }}
     </ul>

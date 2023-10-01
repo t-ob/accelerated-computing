@@ -16,6 +16,7 @@
       "meta",
       "p",
       "script",
+      "span",
       "ul"
     ],
     "classes": [
@@ -29,18 +30,17 @@
       "mx-auto",
       "prose",
       "space-x-4",
-      "text-center"
+      "text-center",
+      "w-16",
+      "w-20",
+      "x-4"
     ],
     "ids": [
       "aiml",
       "compilers",
       "cryptography",
-      "heading",
-      "how",
       "how-i-got-here",
       "how-im-going-to-spend-my-time",
-      "plugging-gaps",
-      "the-plan",
       "what-will-i-do-afterwards",
       "writing"
     ]
