@@ -46,9 +46,7 @@
       "prose",
       "space-x-4",
       "text-center",
-      "w-16",
-      "w-20",
-      "x-4"
+      "w-16"
     ],
     "ids": [
       "aiml",
@@ -64,12 +62,8 @@
       "fnref:2",
       "fnref:3",
       "fnref:4",
-      "heading",
       "how-i-got-here",
       "how-im-going-to-spend-my-time",
-      "i",
-      "introduction",
-      "neural-networks",
       "overview",
       "what-will-i-do-afterwards",
       "writing"

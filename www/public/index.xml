@@ -6,7 +6,16 @@
     <description>Recent content on Accelerated Computing</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 01 Oct 2023 12:17:57 +0100</lastBuildDate><atom:link href="https://accelerated-computing.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 02 Oct 2023 14:25:42 +0100</lastBuildDate><atom:link href="https://accelerated-computing.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Notes on neural networks: basic concepts</title>
+      <link>https://accelerated-computing.com/blog/notes-on-neural-networks-01-basic-concepts/</link>
+      <pubDate>Mon, 02 Oct 2023 14:25:42 +0100</pubDate>
+      
+      <guid>https://accelerated-computing.com/blog/notes-on-neural-networks-01-basic-concepts/</guid>
+      <description>Overview A neural network is (broadly speaking) a collection of transformations arranged in a sequence of layers of neurons. A neuron is made up of some weights $W$, a bias $b$, and (frequently) a non-linear function $g$. Examples of non-linear functions typically used are ReLU, tanh, softmax, and sigmoid. A neuron in layer $i$ takes as inputs the outputs of the neurons in layer $i - 1$, applies the linear transformation encoded by its weights, adds its bias, then finally outputs the value of $g$ applied to the sum.</description>
+    </item>
+    
     <item>
       <title>RC: Week two</title>
       <link>https://accelerated-computing.com/blog/rc-week-two/</link>

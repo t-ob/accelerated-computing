@@ -11,6 +11,8 @@ pluralizeListTitles = false
 [Author]
   name = "Thomas O'Brien"
 
+[taxonomies]
+
 [menu]
 [[menu.main]]
   name = 'Home'
