@@ -6,7 +6,17 @@
     <description>Recent content in Blog on Accelerated Computing</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 02 Oct 2023 14:25:42 +0100</lastBuildDate><atom:link href="https://accelerated-computing.com/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 10 Oct 2023 22:57:57 +0100</lastBuildDate><atom:link href="https://accelerated-computing.com/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Notes on neural networks: loss, gradient descent, and backpropagation</title>
+      <link>https://accelerated-computing.com/blog/notes-on-neural-networks-part-02/</link>
+      <pubDate>Tue, 10 Oct 2023 22:57:57 +0100</pubDate>
+      
+      <guid>https://accelerated-computing.com/blog/notes-on-neural-networks-part-02/</guid>
+      <description>Minimising loss via gradient descent When we talk about neural networks, the loss of a given network architecture on a set of example inputs is a scalar value which represents how well the model does (or doesn&amp;rsquo;t) fit those inputs1. Examples of loss functions include root mean squared error and cross-entropy.
+Training a neural network involves minimising some chosen loss function $ℒ$. It is an iterative process. The most straightforward way to go about this minimisation is via the technique known as gradient descent &amp;ndash; at a high level, given some initial parameters ${\theta = (\theta_1, \ldots, \theta_k)}$ of our network2, and a loss function $ℒ$, we can implement gradient descent by repeatedly performing the following steps:</description>
+    </item>
+    
     <item>
       <title>Notes on neural networks: basic concepts</title>
       <link>https://accelerated-computing.com/blog/notes-on-neural-networks-01-basic-concepts/</link>

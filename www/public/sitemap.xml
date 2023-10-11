@@ -3,10 +3,13 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://accelerated-computing.com/</loc>
-    <lastmod>2023-10-02T14:25:42+01:00</lastmod>
+    <lastmod>2023-10-10T22:57:57+01:00</lastmod>
   </url><url>
     <loc>https://accelerated-computing.com/blog/</loc>
-    <lastmod>2023-10-02T14:25:42+01:00</lastmod>
+    <lastmod>2023-10-10T22:57:57+01:00</lastmod>
+  </url><url>
+    <loc>https://accelerated-computing.com/blog/notes-on-neural-networks-part-02/</loc>
+    <lastmod>2023-10-10T22:57:57+01:00</lastmod>
   </url><url>
     <loc>https://accelerated-computing.com/blog/notes-on-neural-networks-01-basic-concepts/</loc>
     <lastmod>2023-10-02T14:25:42+01:00</lastmod>

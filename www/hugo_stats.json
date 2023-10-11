@@ -3,6 +3,7 @@
     "tags": [
       "a",
       "body",
+      "code",
       "div",
       "em",
       "h1",
@@ -44,12 +45,14 @@
       "mb-auto",
       "mx-auto",
       "prose",
+      "py-8",
       "space-x-4",
       "text-center",
       "w-16"
     ],
     "ids": [
       "aiml",
+      "backpropagation",
       "compilers",
       "conclusion",
       "cryptography",
@@ -64,7 +67,12 @@
       "fnref:4",
       "how-i-got-here",
       "how-im-going-to-spend-my-time",
+      "loss-functions-and-gradient-descent",
+      "minimising-loss",
+      "minimising-loss-via",
+      "minimising-loss-via-gradient-descent",
       "overview",
+      "references",
       "what-will-i-do-afterwards",
       "writing"
     ]
