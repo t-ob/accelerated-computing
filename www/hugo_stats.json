@@ -3,6 +3,7 @@
     "tags": [
       "a",
       "body",
+      "br",
       "code",
       "div",
       "em",
@@ -51,8 +52,11 @@
       "w-16"
     ],
     "ids": [
+      "activations",
+      "activations-means-and-variances-todo-better-name",
       "aiml",
       "backpropagation",
+      "batch-normalisation",
       "compilers",
       "conclusion",
       "cryptography",
@@ -65,14 +69,19 @@
       "fnref:2",
       "fnref:3",
       "fnref:4",
+      "further-reading",
       "how-i-got-here",
       "how-im-going-to-spend-my-time",
-      "loss-functions-and-gradient-descent",
-      "minimising-loss",
-      "minimising-loss-via",
       "minimising-loss-via-gradient-descent",
       "overview",
-      "references",
+      "parameter-initialisation",
+      "scratch",
+      "the-problem",
+      "the-sol",
+      "the-solut",
+      "the-solution",
+      "the-solutions",
+      "untamed-variances",
       "what-will-i-do-afterwards",
       "writing"
     ]
