@@ -1,7 +1,7 @@
 ---
 title: "Notes on neural networks: positional encoding"
 date: 2023-12-07T22:57:57+01:00
-draft: true
+draft: false
 math: true
 ---
 
