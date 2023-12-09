@@ -6,7 +6,17 @@
     <description>Recent content in Blog on Accelerated Computing</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 10 Nov 2023 22:57:57 +0100</lastBuildDate><atom:link href="https://accelerated-computing.com/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 07 Dec 2023 22:57:57 +0100</lastBuildDate><atom:link href="https://accelerated-computing.com/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Notes on neural networks: positional encoding</title>
+      <link>https://accelerated-computing.com/blog/notes-on-neural-networks-part-04/</link>
+      <pubDate>Thu, 07 Dec 2023 22:57:57 +0100</pubDate>
+      
+      <guid>https://accelerated-computing.com/blog/notes-on-neural-networks-part-04/</guid>
+      <description>Disclaimer: this post contains content which might be just simply incorrect. I&amp;rsquo;m still internalising some of these concepts, and my hope is the act of writing them down will help to make them a bit more concrete. This is very much a &amp;ldquo;thinking out loud&amp;rdquo; kind of post.
+Context windows and positions I will write about attention and the transformer architecture in a (/ a number of) future posts, but their study has motivated this one so I&amp;rsquo;ll need to use a bit of that language to set the scene.</description>
+    </item>
+    
     <item>
       <title>Notes on neural networks: initialisation and normalisation techniques</title>
       <link>https://accelerated-computing.com/blog/notes-on-neural-networks-part-03/</link>
