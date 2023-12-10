@@ -172,7 +172,7 @@ The paper claims that in practice, both approaches yielded more or less identica
 
 ### Alternate approaches
 
-Other approaches to positional encodings exist and have been explored since the transformer architecture exploded in popularity. My fellow RC participant [Régis][regis-blog] ran a few sessions to explore these further. We looked at [RoPE][paper-rope], which replaces positional encoding with a sequence of rotations, and [ALiBi][paper-alibi], which substitutes positional encoding altogether with a modified query-key attention score process, which penalises attention scores between items that are far apart.
+Other approaches to positional encodings exist and have been explored since the transformer architecture exploded in popularity. My fellow RC participant [Régis][regis-blog] ran a few sessions to explore these further. We looked at [RoPE][paper-rope] and [ALiBi][paper-alibi], both of which substitute positional encoding altogether with a modified query-key attention score process -- the former by inserting rotations, and the latter by penalising scores between items further apart.[^ty-regis]
 
 ### Conclusion
 
@@ -193,3 +193,4 @@ Putting these thoughts into words has made me realise there's a good chance I'm 
 [regis-blog]: https://swe-to-mle.pages.dev/
 
 [^my-ignorance]: I still find this surprising as the intuition I've internalised, which I now believe is not correct, is that any respectable positional embedding would not perturb the original vocabulary too much, so as to preserve semantic meanings (in the case of natural language, at least). In this case as our embedding dimension grows we end up pushing our points in different positions further and further apart. Maybe semantic meaning (eg. the classic example "king - man + woman = queen") has less to do with absolute position and more to do with relative position amongst neighbouring points.
+[^ty-regis]: Thanks also to Régis who pointed out an earlier version of this paragraph was not entirely correct!
